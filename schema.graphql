@@ -1,0 +1,51 @@
+type Product @entity {
+  id: ID!
+  name: String!
+  price: BigInt!
+  quantity: BigInt!
+  isForSale: Boolean!
+  seller: User!
+  usdtBalance: BigInt!
+  ipfsLink: String!
+  description: String!
+  purchases: [Purchase!]! @derivedFrom(field: "product")
+}
+
+type Purchase @entity {
+  id: ID!
+  product: Product!
+  buyer: User!
+  quantity: BigInt!
+  totalPrice: BigInt!
+  isConfirmed: Boolean!
+  purchaseTime: BigInt!
+  isDisputed: Boolean!
+  judge: Judge
+  referrer: User
+  transactions: [Transaction!]! @derivedFrom(field: "purchase")
+}
+type Transaction @entity {
+  id: ID!
+  timestamp: BigInt!
+  blockNumber: BigInt!
+  purchase: Purchase!
+  type: String! # Type of transaction (e.g., "PURCHASE", "CONFIRM", "DISPUTE", "RESOLVE")
+  from: User!
+}
+
+type User @entity {
+  id: ID!
+  isSeller: Boolean!
+  isJudge: Boolean!
+  productsCreated: [Product!]! @derivedFrom(field: "seller")
+  purchasesMade: [Purchase!]! @derivedFrom(field: "buyer")
+  referralRewards: BigInt!
+  judgeRole: Judge @derivedFrom(field: "user")
+  sentTransactions: [Transaction!]! @derivedFrom(field: "from")
+}
+
+type Judge @entity {
+  id: ID!
+  user: User!
+  disputesHandled: [Purchase!]! @derivedFrom(field: "judge")
+}
