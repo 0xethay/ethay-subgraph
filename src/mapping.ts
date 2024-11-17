@@ -7,6 +7,7 @@ import {
   DisputeResolved,
   JudgeRegistered,
   ReferralRewardEarned,
+  JudgeAssigned,
 } from '../generated/Contract/Contract'
 import {
   Product,
@@ -111,13 +112,30 @@ export function handlePurchaseConfirmed(event: PurchaseConfirmed): void {
   }
 }
 
-export function handleDisputeRaised(event: DisputeRaised): void {
-  let purchaseId =
-    event.params.productId.toString() + '-' + event.params.purchaseId.toString()
+export function handleJudgeAssigned(event: JudgeAssigned): void {
+  let purchaseId = event.params.productId.toString() + '-' + event.params.purchaseId.toString()
   let purchase = Purchase.load(purchaseId)
+  let judgeId = event.params.judge.toHexString()
+
+  // Create or load Judge entity
+  let judge = Judge.load(judgeId)
+  if (!judge) {
+    judge = new Judge(judgeId)
+    let user = User.load(judgeId)
+    if (!user) {
+      user = new User(judgeId)
+      user.isSeller = false
+      user.isJudge = true
+      user.referralRewards = BigInt.fromI32(0)
+      user.save()
+    }
+    judge.user = user.id
+    judge.save()
+  }
+
   if (purchase != null) {
     purchase.isDisputed = true
-    purchase.judge = event.params.judge.toHexString()
+    purchase.judge = judgeId
     purchase.save()
 
     // Create transaction record for dispute
@@ -181,3 +199,5 @@ export function handleReferralRewardEarned(event: ReferralRewardEarned): void {
   user.referralRewards = user.referralRewards.plus(event.params.amount)
   user.save()
 }
+
+export function handleDisputeRaised(event: DisputeRaised): void {}

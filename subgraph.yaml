@@ -36,4 +36,6 @@ dataSources:
           handler: handleJudgeRegistered
         - event: ReferralRewardEarned(address,uint256)
           handler: handleReferralRewardEarned
+        - event: JudgeAssigned(uint256,uint256,address)
+          handler: handleJudgeAssigned
       file: ./src/mapping.ts
